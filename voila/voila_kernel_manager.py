@@ -9,6 +9,8 @@
 
 
 import asyncio
+from aiologger import Logger
+import logging
 import os
 import re
 from pathlib import Path
@@ -19,6 +21,10 @@ from typing import Tuple, Type, TypeVar, Union
 from warnings import warn
 
 from jupyter_core.utils import ensure_async
+from jupyter_server.services.kernels.kernelmanager import (
+    MappingKernelManager, 
+    AsyncMappingKernelManager
+)
 from traitlets import validate
 from traitlets.traitlets import Dict, Float, List, default
 
@@ -27,6 +33,23 @@ from .utils import ENV_VARIABLE, get_page_config
 
 T = TypeVar("T")
 
+#-----------------------------------------------------------------------------#
+#logging
+AsyncLogger = Logger.with_default_handlers(
+    name=__name__,
+    level=logging.DEBUG
+)
+
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
+LOGGER.propagate = False
+formatter = logging.Formatter(
+    '%(asctime)s - %(levelname)s - %(name)s :~%(threadName)s~ %(message)s')
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+LOGGER.addHandler(console_handler)
+
+#-----------------------------------------------------------------------------#
 
 async def wait_before(delay: float, aw: Awaitable) -> Awaitable:
     await asyncio.sleep(delay)
@@ -34,7 +57,7 @@ async def wait_before(delay: float, aw: Awaitable) -> Awaitable:
 
 
 def voila_kernel_manager_factory(
-    base_class: Type[T],
+    base_class: Type[T] | MappingKernelManager | AsyncMappingKernelManager,
     preheat_kernel: bool,
     default_pool_size: int,
     page_config_hook: Optional[Callable] = None,
@@ -68,6 +91,21 @@ def voila_kernel_manager_factory(
 
             def get_pool_size(self, nb: str) -> int:
                 return 0
+            
+            async def start_kernel(self, *, kernel_id=None, path=None, **kwargs):
+                """
+                """
+                #
+                await AsyncLogger.info(f'starting kernel:'
+                    + f' {kernel_id=}'
+                    + f' {path=}'
+                    + f' {kwargs=}'
+                    )
+
+                #
+                return await super().start_kernel(
+                    kernel_id=kernel_id, 
+                    path=path)
 
         return NormalKernelManager
 
@@ -150,6 +188,22 @@ def voila_kernel_manager_factory(
                     for nb in all_notebooks:
                         self.fill_if_needed(delay=0, notebook_name=str(nb))
 
+            async def start_kernel(self, *, kernel_id=None, path=None, **kwargs):
+                """
+                """
+                #
+                await AsyncLogger.info(f'starting kernel:'
+                    + f' {kernel_id=}'
+                    + f' {path=}'
+                    + f' {kwargs=}'
+                    )
+
+                #
+                return await super().start_kernel(
+                    kernel_id=kernel_id, 
+                    path=path)
+            
+            
             async def get_rendered_notebook(
                 self,
                 notebook_name: str,
@@ -343,7 +397,7 @@ def voila_kernel_manager_factory(
                 kernel_name = renderer.notebook.metadata.kernelspec.name
 
                 if kernel_id is None:
-                    kernel_id = await super().start_kernel(
+                    kernel_id = await self.start_kernel(
                         kernel_name=kernel_name, **kwargs
                     )
 
