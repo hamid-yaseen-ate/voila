@@ -2,6 +2,11 @@ import os
 import sys
 from urllib.request import urlopen
 
+# This snippet of code disables SSL certificate verification in Python by 
+# modifying the default SSL context:
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
 JUPYTERLAB_APPUTILS_VERSION = "3.2.8"
