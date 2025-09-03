@@ -18,12 +18,14 @@ class VoilaShutdownKernelHandler(APIHandler):
     @tornado.web.authenticated
     async def post(self, kernel_id):
         
-        await AsyncLogger.info(
-            f'{self.__class__.__name__}:'
-            + 'override'
-            + f' {self.request=}'
-            + f' {kernel_id=}'
-            )
+        try:
+            await AsyncLogger.info(
+                f'{self.__class__.__name__}:'
+                + 'override'
+                + f' {self.request=}'
+                + f' {kernel_id=}'
+                )
+        except NotImplementedError: ...
 
         return #FIXME
 

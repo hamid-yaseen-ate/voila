@@ -37,11 +37,13 @@ class TornadoVoilaHandler(VoilaHandler):
             gen         = self.get_generator(path=path)
         
         #
-        await AsyncLogger.info(
-            f'{self.__class__.__name__}:'
-            + f'rendring using {_async=} gen'
-            )
-        
+        try:
+            AsyncLogger.info(
+                f'{self.__class__.__name__}:'
+                + f'rendring using {_async=} gen'
+                )
+        except NotImplementedError: ...
+            
         #
         if _async:           
             async for html in gen:

@@ -988,3 +988,7 @@ class Voila(Application):
 
 
 main = Voila.launch_instance
+
+#
+#print(sys.argv)
+#print(os.environ)

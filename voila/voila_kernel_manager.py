@@ -96,11 +96,15 @@ def voila_kernel_manager_factory(
                 """
                 """
                 #
-                await AsyncLogger.info(f'starting kernel:'
-                    + f' {kernel_id=}'
-                    + f' {path=}'
-                    + f' {kwargs=}'
-                    )
+                try:
+                    await AsyncLogger.info(f'starting kernel:'
+                        + f' {kernel_id=}'
+                        + f' {path=}'
+                        + f' {kwargs=}'
+                        )
+                except NotImplementedError: ...
+
+                #raise ValueError
 
                 #
                 return await super().start_kernel(
@@ -192,11 +196,13 @@ def voila_kernel_manager_factory(
                 """
                 """
                 #
-                await AsyncLogger.info(f'starting kernel:'
-                    + f' {kernel_id=}'
-                    + f' {path=}'
-                    + f' {kwargs=}'
-                    )
+                try:
+                    await AsyncLogger.info(f'starting kernel:'
+                        + f' {kernel_id=}'
+                        + f' {path=}'
+                        + f' {kwargs=}'
+                        )
+                except NotImplementedError: ...
 
                 #
                 return await super().start_kernel(
